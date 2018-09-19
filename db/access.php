@@ -1,7 +1,7 @@
 <?php
 $capabilities = array(
 
-    'block/courses_verification:myaddinstance' => array(
+    'block/escola_modelo:myaddinstance' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
@@ -11,7 +11,7 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/my:manageblocks'
     ),
 
-    'block/courses_verification:addinstance' => array(
+    'block/escola_modelo:addinstance' => array(
         'riskbitmask' => RISK_SPAM | RISK_XSS,
 
         'captype' => 'write',
