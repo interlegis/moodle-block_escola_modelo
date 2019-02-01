@@ -1,4 +1,5 @@
 <?php
+
 $observers = array(
     // Eventos de cursos
     array(
@@ -13,17 +14,28 @@ $observers = array(
         'eventname'   => '\core\event\course_deleted',
         'callback'    => 'block_escola_modelo_observer::course_deleted'
     ),
-    // Eventos de matrícula a cursos
+    // Eventos de categorias
     array(
-        'eventname'   => 'core\event\user_enrolment_created',
-        'callback'    => 'block_escola_modelo_observer::user_enrolment_created'
+        'eventname'   => 'core\event\course_category_updated',
+        'callback'    => 'block_escola_modelo_observer::course_category_updated'
     ),
+    // Eventos de certificados
     array(
-        'eventname'   => 'core\event\user_enrolment_deleted',
-        'callback'    => 'block_escola_modelo_observer::user_enrolment_deleted'
-    ),
-    array(
-        'eventname'   => 'core\event\user_enrolment_updated',
-        'callback'    => 'block_escola_modelo_observer::user_enrolment_updated'
+        'eventname'   => 'mod_certificate\event\certificates_created',
+        'callback'    => 'block_escola_modelo_observer::certificates_created'
     )
+    // ),
+    // // Eventos de matrícula a cursos
+    // array(
+    //     'eventname'   => 'core\event\user_enrolment_created',
+    //     'callback'    => 'block_escola_modelo_observer::user_enrolment_created'
+    // ),
+    // array(
+    //     'eventname'   => 'core\event\user_enrolment_deleted',
+    //     'callback'    => 'block_escola_modelo_observer::user_enrolment_deleted'
+    // ),
+    // array(
+    //     'eventname'   => 'core\event\user_enrolment_updated',
+    //     'callback'    => 'block_escola_modelo_observer::user_enrolment_updated'
+    //)
 );

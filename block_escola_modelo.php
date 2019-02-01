@@ -16,4 +16,8 @@ class block_escola_modelo extends block_base
 
         return $this->content;
     }
+
+    function has_config() {
+        return true;
+    }
 }
