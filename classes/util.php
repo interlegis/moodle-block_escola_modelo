@@ -55,7 +55,7 @@ function categoriaPublica($category) {
  * }
  */
 function atualizaCursoEVL($curso, $visivel = null) {
-    global $DB;
+    global $DB, $CFG;
 
     mtrace("curso " . $curso->id);
 
@@ -72,7 +72,7 @@ function atualizaCursoEVL($curso, $visivel = null) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = 'https://escolamodelows.interlegis.leg.br/api/v1/cursos/registrar/';
+    $uri = $CFG->emURLEVL . '/api/v1/cursos/registrar/';
 
     $obj = new StdClass();
 
@@ -83,15 +83,15 @@ function atualizaCursoEVL($curso, $visivel = null) {
         "logo" => "",
         "ead_id" => $curso->id,
         "visible" => $visivel,
-        "conteudista" => "", //$school->shortname,
-        "certificador" => $school->shortname,
+        "conteudista" => "", 
+        "certificador" => $CFG->emSigla,
         "carga_horaria" => $ch
     );
 
     // Monta o JSON que será enviado ao Web Service
-    $obj->school = $school->shortname; // sigla da escola
+    $obj->school = $CFG->emSigla; 
     $obj->course = $camposCurso;
-    $obj->key = "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z";
+    $obj->key = $CFG->emApplicationToken;
     $json = json_encode($obj);
 
     $response = \Httpful\Request::post($uri)
@@ -160,7 +160,7 @@ function atualizaCategoriaEVL($categoria) {
 
 //     $school = $DB->get_record('course',array('id'=>'1'));        
     
-//     $uri = 'https://escolamodelows.interlegis.leg.br/api/v1/cursos/registrar/';
+//     $uri = $CFG->emURLEVL . '/api/v1/cursos/registrar/';
 
 //     $obj = new StdClass();
 
@@ -223,7 +223,7 @@ function atualizaCertificadoEVL($certificado) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = 'https://escolamodelows.interlegis.leg.br/api/v1/certificados/adicionar/';
+    $uri = $CFG->emURLEVL . '/api/v1/certificados/adicionar/';
 
     $obj = new StdClass();
 
@@ -242,7 +242,7 @@ function atualizaCertificadoEVL($certificado) {
     $mainArray = array(
         'school' => $CFG->emSigla, 
         'certificates' => $certArray,
-        'key' => "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z"
+        'key' => $CFG->emApplicationToken
     );
     $json = json_encode($mainArray);
     
@@ -284,7 +284,7 @@ function atualizaDadosEscola($dadosEscola) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = 'https://escolamodelows.interlegis.leg.br/api/v1/escolas/atualizar/';
+    $uri = $CFG->emURLEVL . '/api/v1/escolas/registrar/';
 
     $obj = new StdClass();
 
@@ -299,11 +299,11 @@ function atualizaDadosEscola($dadosEscola) {
     $mainArray = array(
         'initials_school' => $dadosEscola->sigla_escola,
         'school' => $schoolArray,
-        'key' => "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z"
+        'key' => $CFG->emApplicationToken
     );
     $json = json_encode($mainArray);
     
-    $response = \Httpful\Request::patch($uri)
+    $response = \Httpful\Request::post($uri)
         ->sendsJson()
         ->body($json)
         ->send();

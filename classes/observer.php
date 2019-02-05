@@ -81,7 +81,7 @@ class block_escola_modelo_observer {
         // de modo que na próxima sincronização eles tenham seu status modificado
         atualizaCategoriaEVL($categoria);
     }
-    
+
     // TODO: verificar se é necessário tratar remoção de categoria
     
     //

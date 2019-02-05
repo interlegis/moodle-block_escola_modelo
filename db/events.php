@@ -1,11 +1,6 @@
 <?php
 
 $observers = array(
-    // Evento de logout
-    array(
-        'eventname' => 'core\event\user_loggedout',
-        'callback' => 'block_escola_modelo_observer::user_loggedout'
-    ),
     // Eventos de cursos
     array(
         'eventname' => '\core\event\course_created',
