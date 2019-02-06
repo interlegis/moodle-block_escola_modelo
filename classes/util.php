@@ -72,7 +72,7 @@ function atualizaCursoEVL($curso, $visivel = null) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = $CFG->emURLEVL . '/api/v1/cursos/registrar/';
+    $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
 
     $obj = new StdClass();
 
@@ -160,7 +160,7 @@ function atualizaCategoriaEVL($categoria) {
 
 //     $school = $DB->get_record('course',array('id'=>'1'));        
     
-//     $uri = $CFG->emURLEVL . '/api/v1/cursos/registrar/';
+//     $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
 
 //     $obj = new StdClass();
 
@@ -223,7 +223,7 @@ function atualizaCertificadoEVL($certificado) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = $CFG->emURLEVL . '/api/v1/certificados/adicionar/';
+    $uri = $CFG->emURLWS . '/api/v1/certificados/adicionar/';
 
     $obj = new StdClass();
 
@@ -280,11 +280,11 @@ function registraSincronizacaoCertificado($certificado) {
 // 
 
 function atualizaDadosEscola($dadosEscola) {
-    global $DB;
+    global $DB, $CFG;
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = $CFG->emURLEVL . '/api/v1/escolas/registrar/';
+    $uri = $CFG->emURLWS . '/api/v1/escolas/registrar/';
 
     $obj = new StdClass();
 
