@@ -48,7 +48,7 @@ class escola_modelo extends \core\task\scheduled_task {
 			SELECT ?::varchar as sigla_escola, 
 				?::varchar as url_escola, 
 				c.fullname as nome_escola,
-				(? || \'/pluginfile.php/1/core_admin/logo/0x150/-1\' || logo.value)::varchar as url_logo_escola
+				(? || \'/pluginfile.php/1/core_admin/logocompact/0x150/-1\' || logo.value)::varchar as url_logo_escola
 			FROM mdl_course c
 				JOIN (
 					SELECT value

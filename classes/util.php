@@ -55,7 +55,7 @@ function categoriaPublica($category) {
  * }
  */
 function atualizaCursoEVL($curso, $visivel = null) {
-    global $DB, $CFG;
+    global $DB, $CFG, $USER;
 
     mtrace("curso " . $curso->id);
 
@@ -91,7 +91,7 @@ function atualizaCursoEVL($curso, $visivel = null) {
     // Monta o JSON que será enviado ao Web Service
     $obj->school = $CFG->emSigla; 
     $obj->course = $camposCurso;
-    $obj->key = $CFG->emApplicationToken;
+    $obj->key = $USER->idnumber;
     $json = json_encode($obj);
 
     $response = \Httpful\Request::post($uri)
@@ -217,7 +217,7 @@ function atualizaCategoriaEVL($categoria) {
 // 
 
 function atualizaCertificadoEVL($certificado) {
-    global $DB, $CFG;
+    global $DB, $CFG, $USER;
 
     mtrace("certificado " . $certificado->code);
 
@@ -242,7 +242,7 @@ function atualizaCertificadoEVL($certificado) {
     $mainArray = array(
         'school' => $CFG->emSigla, 
         'certificates' => $certArray,
-        'key' => $CFG->emApplicationToken
+        'key' => $USER->idnumber
     );
     $json = json_encode($mainArray);
     
@@ -280,7 +280,7 @@ function registraSincronizacaoCertificado($certificado) {
 // 
 
 function atualizaDadosEscola($dadosEscola) {
-    global $DB, $CFG;
+    global $DB, $CFG, $USER;
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
@@ -293,15 +293,11 @@ function atualizaDadosEscola($dadosEscola) {
         'name' => $dadosEscola->nome_escola,
         'url' => $dadosEscola->url_escola,
         'logo' => $dadosEscola->url_logo_escola,
-        'initials' => $dadosEscola->sigla_escola
+	'initials' => $dadosEscola->sigla_escola,
+	'key' => $USER->idnumber
     );
     
-    $mainArray = array(
-        'initials_school' => $dadosEscola->sigla_escola,
-        'school' => $schoolArray,
-        'key' => $CFG->emApplicationToken
-    );
-    $json = json_encode($mainArray);
+    $json = json_encode($schoolArray);
     
     $response = \Httpful\Request::post($uri)
         ->sendsJson()

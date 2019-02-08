@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="mdl_ilb_sync_course" COMMENT="Tabela de sincronização de informações de cursos">
+    <TABLE NAME="ilb_sync_course" COMMENT="Tabela de sincronização de informações de cursos">
       <FIELDS>
         <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="time_sync" TYPE="int" LENGTH="8" NOTNULL="true" SEQUENCE="false"/>
@@ -13,7 +13,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="course_id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="mdl_ilb_sync_certificate" COMMENT="Tabela de sincronização de informações de certificados">
+    <TABLE NAME="ilb_sync_certificate" COMMENT="Tabela de sincronização de informações de certificados">
       <FIELDS>
         <FIELD NAME="certificate_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="time_sync" TYPE="int" LENGTH="8" NOTNULL="true" SEQUENCE="false"/>
@@ -22,7 +22,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="certificate_id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="mdl_ilb_sync_user_enrolments" COMMENT="Tabela de sincronização de informações de matrículas">
+    <TABLE NAME="ilb_sync_user_enrolments" COMMENT="Tabela de sincronização de informações de matrículas">
       <FIELDS>
         <FIELD NAME="user_enrolment_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="time_sync" TYPE="int" LENGTH="8" NOTNULL="true" SEQUENCE="false"/>

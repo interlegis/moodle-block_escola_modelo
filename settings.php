@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
-    // Sigla da Escola na EVL
+/*    // Sigla da Escola na EVL
     $setting = new admin_setting_configtext('block_escola_modelo/config_sigla_evl',
         get_string('config_sigla_evl_titulo', 'block_escola_modelo'),
         get_string('config_sigla_evl_descricao', 'block_escola_modelo'), '', PARAM_ALPHA, 3);
@@ -37,4 +37,5 @@ if ($ADMIN->fulltree) {
         get_string('config_apikey_titulo', 'block_escola_modelo'),
         get_string('config_apikey_descricao', 'block_escola_modelo'), '', PARAM_ALPHA, 50);
     $settings->add($setting);
+ */
 }
