@@ -91,7 +91,7 @@ function atualizaCursoEVL($curso, $visivel = null) {
     // Monta o JSON que será enviado ao Web Service
     $obj->school = $CFG->emSigla; 
     $obj->course = $camposCurso;
-    $obj->key = $USER->idnumber;
+    $obj->key = $CFG->emApplicationToken;
     $json = json_encode($obj);
 
     $response = \Httpful\Request::post($uri)
@@ -242,7 +242,7 @@ function atualizaCertificadoEVL($certificado) {
     $mainArray = array(
         'school' => $CFG->emSigla, 
         'certificates' => $certArray,
-        'key' => $USER->idnumber
+        'key' =>$ $CFG->emApplicationToken
     );
     $json = json_encode($mainArray);
     
@@ -294,7 +294,7 @@ function atualizaDadosEscola($dadosEscola) {
         'url' => $dadosEscola->url_escola,
         'logo' => $dadosEscola->url_logo_escola,
 	'initials' => $dadosEscola->sigla_escola,
-	'key' => $USER->idnumber
+	'key' => $CFG->emApplicationToken 
     );
     
     $json = json_encode($schoolArray);
