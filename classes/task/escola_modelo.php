@@ -49,10 +49,10 @@ class escola_modelo extends \core\task\scheduled_task {
 				?::varchar as url_escola, 
 				c.fullname as nome_escola,
 				(? || \'/pluginfile.php/1/core_admin/logocompact/0x150/-1\' || logo.value)::varchar as url_logo_escola
-			FROM mdl_course c
+			FROM {course} c
 				JOIN (
 					SELECT value
-					FROM mdl_config_plugins 
+					FROM {config_plugins} 
 					WHERE plugin = \'core_admin\' 
 						AND name = \'logocompact\'
 				) logo
@@ -83,8 +83,8 @@ class escola_modelo extends \core\task\scheduled_task {
 			FROM {course} c
 				LEFT JOIN {ilb_sync_course} sc
 					ON c.id = sc.course_id
-			WHERE sc.course_id is null
-				OR c.timemodified > sc.time_sync
+			WHERE (sc.course_id is null
+				OR c.timemodified > sc.time_sync)
 		';
 
 		$listaCursos = $DB->get_records_sql($sqlCourses,array());
@@ -134,8 +134,8 @@ class escola_modelo extends \core\task\scheduled_task {
 			SELECT c.id as courseid, u.username, ci.timecreated, gg.finalgrade, ci.code, cert.id
 			FROM (
 				SELECT ci.timecreated, sc.time_sync, ci.code, ci.certificateid, ci.userid
-				FROM mdl_certificate_issues ci
-					LEFT JOIN mdl_ilb_sync_certificate sc
+				FROM {certificate_issues} ci
+					LEFT JOIN {ilb_sync_certificate} sc
 						ON ci.id = sc.certificate_id
 				WHERE sc.time_sync is null
 					OR ci.timecreated > sc.time_sync

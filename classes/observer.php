@@ -2,8 +2,8 @@
 
 require_once($CFG->dirroot.'/config.php');
 
-include('httpful.phar');
-include('util.php');
+include_once('../lib/httpful.phar');
+include_once('util.php');
 
 class block_escola_modelo_observer {
     

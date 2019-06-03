@@ -4,7 +4,7 @@
  */
 
 require_once($CFG->dirroot.'/config.php');
-include('httpful.phar');
+include_once('../lib/httpful.phar');
 
 /**
  * Verifica se um curso é público, conforme critérios da EVL.
