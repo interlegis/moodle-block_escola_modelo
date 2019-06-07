@@ -2,7 +2,7 @@
 
 require_once($CFG->dirroot.'/config.php');
 
-include_once('../lib/httpful.phar');
+include_once($CFG->dirroot . '/blocks/escola_modelo/lib/httpful.phar');
 include_once('util.php');
 
 class block_escola_modelo_observer {
@@ -73,13 +73,14 @@ class block_escola_modelo_observer {
     }
 
     // EVENTOS RELACIONADOS A CERTIFICADOS
-    public static function certificates_created(\core\event\base $event) {
+    public static function certificate_created(\mod_certificate\event\certificate_created $event) {
         global $DB, $CFG;
-        $categoria = $DB->get_record($event->objecttable,array('id'=>$event->objectid));
+        //$categoria = $DB->get_record($event->objecttable,array('id'=>$event->objectid));
 
         // A forma mais segura de fazê-lo é modificar timemodified de todos os cursos,
         // de modo que na próxima sincronização eles tenham seu status modificado
-        atualizaCategoriaEVL($categoria);
+        //atualizaCategoriaEVL($categoria);
+        mtrace('Criando certificado para ' . $event->objectid . ' e other ' . $event->other);
     }
 
     // TODO: verificar se é necessário tratar remoção de categoria

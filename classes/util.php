@@ -4,34 +4,66 @@
  */
 
 require_once($CFG->dirroot.'/config.php');
-include_once('../lib/httpful.phar');
+include_once($CFG->dirroot . '/blocks/escola_modelo/lib/httpful.phar');
+include_once($CFG->dirroot . '/course/externallib.php');
+
+define("CURSO_CUSTOMFIELD_PUBLICO",    "publico");
+define("CURSO_CUSTOMFIELD_AREATEMATICA",    "areatematica");
+define("CURSO_CUSTOMFIELD_CARGAHORARIA",    "cargahoraria");
+define("CURSO_CUSTOMFIELD_SENADOR",    "senador");
+define("CURSO_CUSTOMFIELD_MUNICIPIO",    "municipio");
+define("CURSO_CUSTOMFIELD_TIPOOFICINA",    "tipooficina");
+define("CURSO_CUSTOMFIELD_INSTRUTOR",    "instrutor");
+define("CURSO_CUSTOMFIELD_MONITOR",    "monitor");
 
 /**
  * Verifica se um curso é público, conforme critérios da EVL.
- * Pelas regras estabelecidas, um curso é público se a categoria raiz em que ele
- * estiver for uma categoria pública.
+ * Pelas regras estabelecidas, um curso é público se foi marcado como público 
+ * em campo customizado
  */
 function cursoPublico($course) {
     global $DB;
 
-    $category = $DB->get_record('course_categories', array('id'=>$course->category));        
-    $path = explode('/',$category->path);        
-    $root_category_id = $path[1];        
-    $root_category = $DB->get_record('course_categories',array('id'=>$root_category_id));        
-
-    return categoriaPublica($root_category);
+    // Um curso é público se estiver marcado como público em campo personalizado
+    $publico = (obtemCampoCustomizadoCurso($course->id, CURSO_CUSTOMFIELD_PUBLICO) == '1');
+    return $publico;
 }
 
-/**
- * Verifica se uma categoria é pública, conforme critérios da EVL
- * Pelas regras estabelecidas, uma categoria é pública se possuir idnumber iniciado por PUB_
- */
-function categoriaPublica($category) {
-    $idnumber=$category->idnumber;
-    $isPublic=(strcasecmp(substr($idnumber,0,4), 'PUB_') == 0);
+function evlHabilitada() {
+    $config = get_config('block_escola_modelo');
+    return ($config->config_habilitar_evl == 1);
+}
+
+// TODO mover para outro local, usado também em certificado
+function obtemCampoCustomizadoCurso($idCurso, $nomeCampo) {
+    global $DB;
+
+    $sql = "
+        SELECT d.value, f.configdata::json->>'options' as options
+        FROM mdl_course c
+        JOIN mdl_context ctx
+            ON c.id = ?
+                AND ctx.contextlevel = 50
+                AND ctx.instanceid = c.id
+        JOIN mdl_customfield_field f
+            ON f.shortname = ?
+        JOIN mdl_customfield_data d
+            ON d.fieldid = f.id
+                AND d.contextid = ctx.id
+        ";
     
-    return $isPublic;
-}  
+    $valueArray = $DB->get_record_sql($sql, [$idCurso, $nomeCampo]);
+    $value = $valueArray->value;
+    $options = $valueArray->options;
+
+    if($options == null) {
+        return $value;
+    } else {
+        
+        $optionsArray = preg_split("/\s*\n\s*/", trim($options));
+        return $optionsArray[$value-1];
+    }
+}
 
 /**
  * Registra um determinado curso na EVL, com o status informado
@@ -57,53 +89,53 @@ function categoriaPublica($category) {
 function atualizaCursoEVL($curso, $visivel = null) {
     global $DB, $CFG, $USER;
 
-    mtrace("curso " . $curso->id);
+    if( evlHabilitada() ) {
+        // Detecta status, caso ele não tenha sido especificado
+        $visivel = $visivel ?? cursoPublico($curso);
+        
+        // Hack: enquanto não há campos personalizados no curso, a carga horária
+        // precisa ser obtida a partir do idnumber
+        $idnumber = $curso->idnumber;
+        $ch = 0;
+        if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
+            $ch = $x[1];
+        }
 
-    // Detecta status, caso ele não tenha sido especificado
-    $visivel = $visivel ?? cursoPublico($curso);
-    
-    // Hack: enquanto não há campos personalizados no curso, a carga horária
-    // precisa ser obtida a partir do idnumber
-    $idnumber = $curso->idnumber;
-    $ch = 0;
-    if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
-        $ch = $x[1];
-    }
+        $school = $DB->get_record('course',array('id'=>'1'));        
+        
+        $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
 
-    $school = $DB->get_record('course',array('id'=>'1'));        
-    
-    $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
+        $obj = new StdClass();
 
-    $obj = new StdClass();
+        $camposCurso = array( 
+            "name" => $curso->fullname,
+            "url" => "",
+            "description" => $curso->summary,
+            "logo" => "",
+            "ead_id" => $curso->id,
+            "visible" => $visivel,
+            "conteudista" => "", 
+            "certificador" => $CFG->emSigla,
+            "carga_horaria" => $ch
+        );
 
-    $camposCurso = array( 
-        "name" => $curso->fullname,
-        "url" => "",
-        "description" => $curso->summary,
-        "logo" => "",
-        "ead_id" => $curso->id,
-        "visible" => $visivel,
-        "conteudista" => "", 
-        "certificador" => $CFG->emSigla,
-        "carga_horaria" => $ch
-    );
+        // Monta o JSON que será enviado ao Web Service
+        $obj->school = $CFG->emSigla; 
+        $obj->course = $camposCurso;
+        $obj->key = $CFG->emApplicationToken;
+        $json = json_encode($obj);
 
-    // Monta o JSON que será enviado ao Web Service
-    $obj->school = $CFG->emSigla; 
-    $obj->course = $camposCurso;
-    $obj->key = $CFG->emApplicationToken;
-    $json = json_encode($obj);
-
-    $response = \Httpful\Request::post($uri)
-        ->sendsJson()
-        ->body($json)
-        ->send();
-    
-    // Se o registro foi criado no servidor, registra em tabela de controle
-    if(!$response->hasErrors()) {
-        registraSincronizacaoCurso($curso);
-    } else {
-        mtrace("Erro sincronizando ". $curso->fullname . ": " . $response->code . " " );
+        $response = \Httpful\Request::post($uri)
+            ->sendsJson()
+            ->body($json)
+            ->send();
+        
+        // Se o registro foi criado no servidor, registra em tabela de controle
+        if(!$response->hasErrors()) {
+            registraSincronizacaoCurso($curso);
+        } else {
+            mtrace("Erro sincronizando ". $curso->fullname . ": " . $response->code . " " );
+        }
     }
 }
 
