@@ -144,14 +144,17 @@ function atualizaCursoEVL($curso, $visivel = null) {
  */
 function registraSincronizacaoCurso($curso) {
     global $DB;
-
+    
+    // VALUES (' . $curso->id . ',' . date('H:i:s') . ')
+        // ON CONFLICT (' . $curso->id . ') DO UPDATE 
+        //    SET time_sync = ?';
     $qry = '
         INSERT INTO {ilb_sync_course} (course_id, time_sync) 
         VALUES (?,?)
         ON CONFLICT (course_id) DO UPDATE 
-            SET time_sync = ?';
+           SET time_sync = ?';
     $params = array($curso->id, $curso->timemodified, $curso->timemodified);
-
+    
     return $DB->execute($qry, $params);
 }
 
@@ -250,7 +253,6 @@ function atualizaCategoriaEVL($categoria) {
 
 function atualizaCertificadoEVL($certificado) {
     global $DB, $CFG, $USER;
-
     mtrace("certificado " . $certificado->code);
 
     $school = $DB->get_record('course',array('id'=>'1'));        
@@ -258,31 +260,31 @@ function atualizaCertificadoEVL($certificado) {
     $uri = $CFG->emURLWS . '/api/v1/certificados/adicionar/';
 
     $obj = new StdClass();
-
     $certArray = array();
 
     // Gravação de certificado para envio ao Web Service da EVL
     $certItem = array(
-        'course' => $certificado->courseid,
-        'student' => $certificado->username,
+        'course' => $certificado->course,
+        'student' => $certificado->user,
         'date' => $certificado->timecreated,
-        'grade' => $certificado->finalgrade,
-        'code' => $certificado->code,
+        'grade' => $certificado->gradefmt,
+        'code' => $certificado->id,
     );
     array_push($certArray, $certItem);
-
     $mainArray = array(
+        'key' => $CFG->emApplicationToken,
         'school' => $CFG->emSigla, 
         'certificates' => $certArray,
-        'key' =>$ $CFG->emApplicationToken
     );
+    
     $json = json_encode($mainArray);
+    echo "AQUI O CERT ARRAY -> {$json}\n";
     
     $response = \Httpful\Request::post($uri)
         ->sendsJson()
         ->body($json)
-        ->send();
-    
+        ->send();    
+
     // Se o registro foi criado no servidor, registra em tabela de controle
     if(!$response->hasErrors()) {
         registraSincronizacaoCertificado($certificado);
@@ -296,7 +298,6 @@ function atualizaCertificadoEVL($certificado) {
  */
 function registraSincronizacaoCertificado($certificado) {
     global $DB;
-
     $qry = '
         INSERT INTO {ilb_sync_certificate} (certificate_id, time_sync) 
         VALUES (?,?)
@@ -325,8 +326,8 @@ function atualizaDadosEscola($dadosEscola) {
         'name' => $dadosEscola->nome_escola,
         'url' => $dadosEscola->url_escola,
         'logo' => $dadosEscola->url_logo_escola,
-	'initials' => $dadosEscola->sigla_escola,
-	'key' => $CFG->emApplicationToken 
+        'initials' => $dadosEscola->sigla_escola,
+        'key' => $CFG->emApplicationToken 
     );
     
     $json = json_encode($schoolArray);

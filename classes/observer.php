@@ -34,10 +34,9 @@ class block_escola_modelo_observer {
     public static function course_updated(\core\event\base $event) {
         global $DB, $CFG;
         $curso = $DB->get_record($event->objecttable,array('id'=>$event->objectid));
-
         atualizaCursoEVL($curso);
     }
-
+    
     /**
      * Trata evento de remoção de um curso.
      * TODO: tratar situações em que isso pode ou não ocorrer, bem como a forma adequada de tratar o evento.
@@ -45,10 +44,16 @@ class block_escola_modelo_observer {
     public static function course_deleted(\core\event\base $event) {
         global $DB, $CFG;
         $curso = $DB->get_record($event->objecttable,array('id'=>$event->objectid));
-
+        
         // Por enquanto, atualizamos o curso na EVL, porém o mesmo fica invisível
         atualizaCursoEVL($curso, false);
     }
+
+    // EVENTOS RELACIONADOS A CERTIFICADOS    
+    public static function certificate_created(\core\event\base $event) {
+        atualizaCertificadoEVL($event->other);
+    }
+
 
     //
     // EVENTOS RELACIONADOS A CATEGORIAS
@@ -66,9 +71,8 @@ class block_escola_modelo_observer {
     public static function course_category_updated(\core\event\base $event) {
         global $DB, $CFG;
         $categoria = $DB->get_record($event->objecttable,array('id'=>$event->objectid));
-
-        // A forma mais segura de fazê-lo é modificar timemodified de todos os cursos,
-        // de modo que na próxima sincronização eles tenham seu status modificado
+        A forma mais segura de fazê-lo é modificar timemodified de todos os cursos,
+        de modo que na próxima sincronização eles tenham seu status modificado
         atualizaCategoriaEVL($categoria);
     }
 
