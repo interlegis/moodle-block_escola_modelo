@@ -23,7 +23,7 @@ $observers = array(
     array(
         'eventname'   => 'mod_certificate\event\certificate_created',
         'callback'    => 'block_escola_modelo_observer::certificate_created'
-    ),
+    )
     // ),
     // // Eventos de matrícula a cursos
     // array(

@@ -27,15 +27,32 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
-/*    // Sigla da Escola na EVL
-    $setting = new admin_setting_configtext('block_escola_modelo/config_sigla_evl',
-        get_string('config_sigla_evl_titulo', 'block_escola_modelo'),
-        get_string('config_sigla_evl_descricao', 'block_escola_modelo'), '', PARAM_ALPHA, 3);
+    $setting = new admin_setting_configcheckbox('block_escola_modelo/config_habilitar_evl',
+        get_string('config_habilitar_evl_titulo', 'block_escola_modelo'),
+        get_string('config_habilitar_evl_descricao', 'block_escola_modelo'), 1);
     $settings->add($setting);
 
+    // Sigla da Escola na EVL
+    $setting = new admin_setting_configtext('block_escola_modelo/config_sigla_evl',
+        get_string('config_sigla_evl_titulo', 'block_escola_modelo'),
+        get_string('config_sigla_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+    $settings->add($setting);
+
+    // API Key desta instalação
     $setting = new admin_setting_configtext('block_escola_modelo/config_apikey',
         get_string('config_apikey_titulo', 'block_escola_modelo'),
-        get_string('config_apikey_descricao', 'block_escola_modelo'), '', PARAM_ALPHA, 50);
+        get_string('config_apikey_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 50);
     $settings->add($setting);
- */
+
+    // URL do Portal da EVL
+    $setting = new admin_setting_configtext('block_escola_modelo/config_url_portal_evl',
+        get_string('config_url_portal_evl_titulo', 'block_escola_modelo'),
+        get_string('config_url_portal_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 100);
+    $settings->add($setting);
+
+    // URL do servidor de Web Services da EVL
+    $setting = new admin_setting_configtext('block_escola_modelo/config_url_ws_evl',
+        get_string('config_url_ws_evl_titulo', 'block_escola_modelo'),
+        get_string('config_url_ws_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 100);
+    $settings->add($setting);
 }
