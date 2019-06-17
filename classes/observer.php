@@ -71,9 +71,9 @@ class block_escola_modelo_observer {
     public static function course_category_updated(\core\event\base $event) {
         global $DB, $CFG;
         $categoria = $DB->get_record($event->objecttable,array('id'=>$event->objectid));
-        A forma mais segura de fazê-lo é modificar timemodified de todos os cursos,
-        de modo que na próxima sincronização eles tenham seu status modificado
-        atualizaCategoriaEVL($categoria);
+        //A forma mais segura de fazê-lo é modificar timemodified de todos os cursos,
+//        de modo que na próxima sincronização eles tenham seu status modificado
+  //      atualizaCategoriaEVL($categoria);
     }
 
     
