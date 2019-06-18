@@ -198,58 +198,96 @@ function atualizaCategoriaEVL($categoria) {
 // Matrículas
 //
 
-// Retirado pois supõe-se que matrículas serão feitas apenas na EVL
-// function atualizaMatriculaEVL($matricula) {
-//     global $DB;
-
-//     // Detecta status, caso ele não tenha sido especificado
-//     $visivel = true; //$visivel ?? cursoPublico($curso);
+function atualizaMatriculas($syncStartTime, $courseId = 0) {
+    global $DB;
     
-//     // Hack: enquanto não há campos personalizados no curso, a carga horária
-//     // precisa ser obtida a partir do idnumber
-//     $idnumber = $curso->idnumber;
-//     $ch = 0;
-//     if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
-//         $ch = $x[1];
-//     }
+    // FIXME comentado para não atrapalhar apresentação para diretor amanhã
+    // (ainda em desenvolvimento)
+/*
+	// Obtem todas as matrículas pendentes de sincronização
+	$sqlEnrolments = '
+        SELECT e.courseid, json_agg( u.username )::varchar as userlist, 
+            (coalesce(publicevl.intvalue,0) <> 0) as publicevl
+        FROM mdl_user_enrolments ue
+            JOIN mdl_enrol e
+                ON e.id = ue.enrolid
+            JOIN mdl_user u
+                ON u.id = ue.userid
+            JOIN mdl_context ctx
+                ON ctx.contextlevel = 50
+                    AND ctx.instanceid = e.courseid
+            JOIN mdl_customfield_data publicevl
+                ON publicevl.contextid = ctx.id
+                    AND publicevl.fieldid = 1
+			LEFT JOIN mdl_ilb_sync_user_enrolments sue
+                ON ue.id = sue.user_enrolment_id            
+		WHERE (sue.user_enrolment_id is null
+            OR ue.timemodified > sue.time_sync)
+            AND (? = 0 OR ue.courseid = ?)		
+        GROUP BY e.courseid, (coalesce(publicevl.intvalue,0) <> 0)
+	';
 
-//     $school = $DB->get_record('course',array('id'=>'1'));        
+    $listaMatriculasCurso = $DB->get_records_sql($sqlEnrolments,
+        array($courseId, $courseId));
+
+	// Atualiza cada um dos cursos pendentes
+	foreach($listaMatriculasCurso as $matricula) {
+		atualizaMatriculaEVL($matricula->courseid, $matricula->userlist, $matricula->publicevl);
+    }
+    */
+}
+
+function atualizaMatriculaEVL($courseid, $userlist, $publicEVL) {
+    global $DB;
+
+    // Detecta status, caso ele não tenha sido especificado
+    $visivel = true; //$visivel ?? cursoPublico($curso);
     
-//     $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
+    // Hack: enquanto não há campos personalizados no curso, a carga horária
+    // precisa ser obtida a partir do idnumber
+    $idnumber = $curso->idnumber;
+    $ch = 0;
+    if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
+        $ch = $x[1];
+    }
 
-//     $obj = new StdClass();
-
-//     $camposCurso = array( 
-//         "name" => $curso->fullname,
-//         "url" => "",
-//         "description" => $curso->summary,
-//         "logo" => "",
-//         "ead_id" => $curso->id,
-//         "visible" => $visivel,
-//         "conteudista" => "", //$school->shortname,
-//         "certificador" => $school->shortname,
-//         "carga_horaria" => $ch
-//     );
-
-//     // Monta o JSON que será enviado ao Web Service
-//     $obj->school = $school->shortname; // sigla da escola
-//     $obj->course = $camposCurso;
-//     $obj->key = "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z";
-
-//     $json = json_encode($obj);
-
-//     $response = \Httpful\Request::post($uri)
-//         ->sendsJson()
-//         ->body($json)
-//         ->send();
+    $school = $DB->get_record('course',array('id'=>'1'));        
     
-//     // Se o registro foi criado no servidor, registra em tabela de controle
-//     if(!$response->hasErrors()) {
-//         registraSincronizacaoMatriculaUsuario($matricula);
-//     } else {
-//         mtrace("Erro sincronizando ". $matricula->fullname . ": " . $response->code . " " );
-//     }
-// }
+    $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
+
+    $obj = new StdClass();
+
+    $camposCurso = array( 
+        "name" => $curso->fullname,
+        "url" => "",
+        "description" => $curso->summary,
+        "logo" => "",
+        "ead_id" => $curso->id,
+        "visible" => $visivel,
+        "conteudista" => "", //$school->shortname,
+        "certificador" => $school->shortname,
+        "carga_horaria" => $ch
+    );
+
+    // Monta o JSON que será enviado ao Web Service
+    $obj->school = $school->shortname; // sigla da escola
+    $obj->course = $camposCurso;
+    $obj->key = "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z";
+
+    $json = json_encode($obj);
+
+    $response = \Httpful\Request::post($uri)
+        ->sendsJson()
+        ->body($json)
+        ->send();
+    
+    // Se o registro foi criado no servidor, registra em tabela de controle
+    if(!$response->hasErrors()) {
+        registraSincronizacaoMatriculaUsuario($matricula);
+    } else {
+        mtrace("Erro sincronizando ". $matricula->fullname . ": " . $response->code . " " );
+    }
+}
 
 // /**
 //  * Insere ou atualiza registro da última sincronização de determinada matricula

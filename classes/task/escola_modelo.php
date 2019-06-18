@@ -15,7 +15,6 @@ global $CFG;
 
 require_once($CFG->dirroot.'/config.php');
 require_once($CFG->dirroot.'/blocks/escola_modelo/classes/util.php');
-require_once('../util.php');
 
 class escola_modelo extends \core\task\scheduled_task {      
 	
@@ -97,30 +96,13 @@ class escola_modelo extends \core\task\scheduled_task {
 		mtrace("Fim da sincronização de cursos");
 	}
 
-	// /**
-	//  * Realiza procedimento de sincronização de matrículas de usuários a cursos,
-	//  * as quais ainda não foram atualizadas na EVL
-	//  */
-	// public function sincronizaMatriculas($syncStartTime) {
-	// 	global $DB;
-
-	// 	// Obtem todas as matrículas pendentes de sincronização
-	// 	$sqlEnrolments = '
-	// 		SELECT ue.*
-	// 		FROM mdl_user_enrolments ue
-	// 			LEFT JOIN mdl_ilb_sync_user_enrolments sue
-	// 				ON ue.id = sue.user_enrolment_id
-	// 		WHERE sue.user_enrolment_id is null
-	// 			OR ue.timemodified > sue.time_sync		
-	// 	';
-
-	// 	$listaMatriculas = $DB->get_records_sql($sqlEnrolments,array());
-
-	// 	// Atualiza cada um dos cursos pendentes
-	// 	foreach($listaMatriculas as $matricula) {
-	// 		atualizaMatriculaEVL($matricula);
-	// 	}
-	// }
+	/**
+	 * Realiza procedimento de sincronização de matrículas de usuários a cursos,
+	 * as quais ainda não foram atualizadas na EVL
+	 */
+	public function sincronizaMatriculas($syncStartTime) {
+		atualizaMatriculas($syncStartTime);
+	}
 	
 	/**
 	 * Realiza procedimento de sincronização de certificados ainda não
