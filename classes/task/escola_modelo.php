@@ -15,6 +15,7 @@ global $CFG;
 
 require_once($CFG->dirroot.'/config.php');
 require_once($CFG->dirroot.'/blocks/escola_modelo/classes/util.php');
+require_once('../util.php');
 
 class escola_modelo extends \core\task\scheduled_task {      
 	
@@ -30,9 +31,9 @@ class escola_modelo extends \core\task\scheduled_task {
 		$syncStartTime = $DB->get_record_sql('SELECT extract(epoch from now())::int8');
 
 		$this->sincronizaDadosEscola($syncStartTime);
-		$this->sincronizaCursos($syncStartTime);
+		//$this->sincronizaCursos($syncStartTime);
 		//$this->sincronizaMatriculas($syncStartTime);
-		$this->sincronizaCertificados($syncStartTime);
+		//$this->sincronizaCertificados($syncStartTime);
 	}
 
 	/**
@@ -60,7 +61,7 @@ class escola_modelo extends \core\task\scheduled_task {
 			WHERE c.id = 1
 		';
 
-		$dadosEscola = $DB->get_record_sql($sqlDadosEscola,array($CFG->emSigla, $CFG->emURL, $CFG->emURL));
+		$dadosEscola = $DB->get_record_sql($sqlDadosEscola,array(evlSiglaEscola(), $CFG->wwwroot, $CFG->wwwroot));
 
 		// Atualiza cada um dos cursos pendentes
 		atualizaDadosEscola($dadosEscola);

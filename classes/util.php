@@ -34,6 +34,26 @@ function evlHabilitada() {
     return ($config->config_habilitar_evl == 1);
 }
 
+function evlSiglaEscola() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_sigla_evl;
+}
+
+function evlAPIKey() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_apikey;
+}
+
+function evlURLPortal() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_url_portal_evl;
+}
+
+function evlURLWebServices() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_url_ws_evl;
+}
+
 // TODO mover para outro local, usado também em certificado
 function obtemCampoCustomizadoCurso($idCurso, $nomeCampo) {
     global $DB;
@@ -103,7 +123,7 @@ function atualizaCursoEVL($curso, $visivel = null) {
 
         $school = $DB->get_record('course',array('id'=>'1'));        
         
-        $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
+        $uri = evlURLWebServices() . '/api/v1/cursos/registrar/';
 
         $obj = new StdClass();
 
@@ -115,14 +135,14 @@ function atualizaCursoEVL($curso, $visivel = null) {
             "ead_id" => $curso->id,
             "visible" => $visivel,
             "conteudista" => "", 
-            "certificador" => $CFG->emSigla,
+            "certificador" => evlSiglaEscola(),
             "carga_horaria" => $ch
         );
 
         // Monta o JSON que será enviado ao Web Service
-        $obj->school = $CFG->emSigla; 
+        $obj->school = evlSiglaEscola();
         $obj->course = $camposCurso;
-        $obj->key = $CFG->emApplicationToken;
+        $obj->key = evlAPIKey();
         $json = json_encode($obj);
 
         $response = \Httpful\Request::post($uri)
@@ -257,7 +277,7 @@ function atualizaCertificadoEVL($certificado) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = $CFG->emURLWS . '/api/v1/certificados/adicionar/';
+    $uri = evlURLWebServices() . '/api/v1/certificados/adicionar/';
 
     $obj = new StdClass();
     $certArray = array();
@@ -272,8 +292,8 @@ function atualizaCertificadoEVL($certificado) {
     );
     array_push($certArray, $certItem);
     $mainArray = array(
-        'key' => $CFG->emApplicationToken,
-        'school' => $CFG->emSigla, 
+        'key' => evlAPIKey(),
+        'school' => evlSiglaEscola(), 
         'certificates' => $certArray,
     );
     
@@ -317,7 +337,7 @@ function atualizaDadosEscola($dadosEscola) {
 
     $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = $CFG->emURLWS . '/api/v1/escolas/registrar/';
+    $uri = evlURLWebServices() . '/api/v1/escolas/registrar/';
 
     $obj = new StdClass();
 
@@ -327,7 +347,7 @@ function atualizaDadosEscola($dadosEscola) {
         'url' => $dadosEscola->url_escola,
         'logo' => $dadosEscola->url_logo_escola,
         'initials' => $dadosEscola->sigla_escola,
-        'key' => $CFG->emApplicationToken 
+        'key' => evlAPIKey()
     );
     
     $json = json_encode($schoolArray);
