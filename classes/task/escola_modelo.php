@@ -83,6 +83,15 @@ class escola_modelo extends \core\task\scheduled_task {
 			FROM {course} c
 				LEFT JOIN {ilb_sync_course} sc
 					ON c.id = sc.course_id
+				JOIN {context} ctx
+					ON c.id = ?
+						AND ctx.contextlevel = 50
+						AND ctx.instanceid = c.id
+				JOIN {customfield_field} f
+					ON f.shortname = ?
+				JOIN {customfield_data} d
+					ON d.fieldid = f.id
+						AND d.contextid = ctx.id
 			WHERE (sc.course_id is null
 				OR c.timemodified > sc.time_sync)
 		';

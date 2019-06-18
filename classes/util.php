@@ -136,7 +136,8 @@ function atualizaCursoEVL($curso, $visivel = null) {
             "visible" => $visivel,
             "conteudista" => "", 
             "certificador" => evlSiglaEscola(),
-            "carga_horaria" => $ch
+            "carga_horaria" => $ch,
+            "category" => obtemCampoCustomizadoCurso($curso->id, CURSO_CUSTOMFIELD_AREATEMATICA)
         );
 
         // Monta o JSON que será enviado ao Web Service
