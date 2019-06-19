@@ -25,14 +25,17 @@ class escola_modelo extends \core\task\scheduled_task {
 	// Ponto de entrada da task
 	public function execute() {       
 		global $DB;
-		// Momento do início do procedimento, para fins de gravação em 
-		// tabelas de controle
-		$syncStartTime = $DB->get_record_sql('SELECT extract(epoch from now())::int8');
 
-		$this->sincronizaDadosEscola($syncStartTime);
-		//$this->sincronizaCursos($syncStartTime);
-		//$this->sincronizaMatriculas($syncStartTime);
-		//$this->sincronizaCertificados($syncStartTime);
+		if(evlHabilitada()) {
+			// Momento do início do procedimento, para fins de gravação em 
+			// tabelas de controle
+			$syncStartTime = $DB->get_record_sql('SELECT extract(epoch from now())::int8');
+
+			$this->sincronizaDadosEscola($syncStartTime);
+			//$this->sincronizaCursos($syncStartTime);
+			//$this->sincronizaMatriculas($syncStartTime);
+			//$this->sincronizaCertificados($syncStartTime);
+		}
 	}
 
 	/**
@@ -79,7 +82,7 @@ class escola_modelo extends \core\task\scheduled_task {
 
 		// Obtem todos os cursos pendentes de sincronização
 		$sqlCourses = '
-			SELECT c.*
+			SELECT c.*, d.value as ind_publico_evl
 			FROM {course} c
 				LEFT JOIN {ilb_sync_course} sc
 					ON c.id = sc.course_id

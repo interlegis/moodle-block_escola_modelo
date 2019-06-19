@@ -186,12 +186,14 @@ function registraSincronizacaoCurso($curso) {
 function atualizaCategoriaEVL($categoria) {
     global $DB;
 
-    $visivel = categoriaPublica($categoria);
+    if( evlHabilitada() ) {
+        $visivel = categoriaPublica($categoria);
     
-    $cursos = $DB->get_records('course', array('category'=>$categoria->id)); 
+        $cursos = $DB->get_records('course', array('category'=>$categoria->id)); 
     
-    foreach ($cursos as $curso) {
-        atualizaCursoEVL($curso, $visivel);
+        foreach ($cursos as $curso) {
+            atualizaCursoEVL($curso, $visivel);
+        }
     }
 }
 
@@ -241,52 +243,55 @@ function atualizaMatriculas($syncStartTime, $courseId = 0) {
 function atualizaMatriculaEVL($courseid, $userlist, $publicEVL) {
     global $DB;
 
-    // Detecta status, caso ele não tenha sido especificado
-    $visivel = true; //$visivel ?? cursoPublico($curso);
-    
-    // Hack: enquanto não há campos personalizados no curso, a carga horária
-    // precisa ser obtida a partir do idnumber
-    $idnumber = $curso->idnumber;
-    $ch = 0;
-    if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
-        $ch = $x[1];
-    }
+    if( evlHabilitada() ) {
+        
+        // Detecta status, caso ele não tenha sido especificado
+        $visivel = true; //$visivel ?? cursoPublico($curso);
+        
+        // Hack: enquanto não há campos personalizados no curso, a carga horária
+        // precisa ser obtida a partir do idnumber
+        $idnumber = $curso->idnumber;
+        $ch = 0;
+        if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
+            $ch = $x[1];
+        }
 
-    $school = $DB->get_record('course',array('id'=>'1'));        
-    
-    $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
+        $school = $DB->get_record('course',array('id'=>'1'));        
+        
+        $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
 
-    $obj = new StdClass();
+        $obj = new StdClass();
 
-    $camposCurso = array( 
-        "name" => $curso->fullname,
-        "url" => "",
-        "description" => $curso->summary,
-        "logo" => "",
-        "ead_id" => $curso->id,
-        "visible" => $visivel,
-        "conteudista" => "", //$school->shortname,
-        "certificador" => $school->shortname,
-        "carga_horaria" => $ch
-    );
+        $camposCurso = array( 
+            "name" => $curso->fullname,
+            "url" => "",
+            "description" => $curso->summary,
+            "logo" => "",
+            "ead_id" => $curso->id,
+            "visible" => $visivel,
+            "conteudista" => "", //$school->shortname,
+            "certificador" => $school->shortname,
+            "carga_horaria" => $ch
+        );
 
-    // Monta o JSON que será enviado ao Web Service
-    $obj->school = $school->shortname; // sigla da escola
-    $obj->course = $camposCurso;
-    $obj->key = "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z";
+        // Monta o JSON que será enviado ao Web Service
+        $obj->school = $school->shortname; // sigla da escola
+        $obj->course = $camposCurso;
+        $obj->key = "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z";
 
-    $json = json_encode($obj);
+        $json = json_encode($obj);
 
-    $response = \Httpful\Request::post($uri)
-        ->sendsJson()
-        ->body($json)
-        ->send();
-    
-    // Se o registro foi criado no servidor, registra em tabela de controle
-    if(!$response->hasErrors()) {
-        registraSincronizacaoMatriculaUsuario($matricula);
-    } else {
-        mtrace("Erro sincronizando ". $matricula->fullname . ": " . $response->code . " " );
+        $response = \Httpful\Request::post($uri)
+            ->sendsJson()
+            ->body($json)
+            ->send();
+        
+        // Se o registro foi criado no servidor, registra em tabela de controle
+        if(!$response->hasErrors()) {
+            registraSincronizacaoMatriculaUsuario($matricula);
+        } else {
+            mtrace("Erro sincronizando ". $matricula->fullname . ": " . $response->code . " " );
+        }
     }
 }
 
@@ -312,43 +317,45 @@ function atualizaMatriculaEVL($courseid, $userlist, $publicEVL) {
 
 function atualizaCertificadoEVL($certificado) {
     global $DB, $CFG, $USER;
-    mtrace("certificado " . $certificado->code);
-
-    $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = evlURLWebServices() . '/api/v1/certificados/adicionar/';
-
-    $obj = new StdClass();
-    $certArray = array();
-
-    // Gravação de certificado para envio ao Web Service da EVL
-    $certItem = array(
-        'course' => $certificado->course,
-        'student' => $certificado->user,
-        'date' => $certificado->timecreated,
-        'grade' => $certificado->gradefmt,
-        'code' => $certificado->id,
-    );
-    array_push($certArray, $certItem);
-    $mainArray = array(
-        'key' => evlAPIKey(),
-        'school' => evlSiglaEscola(), 
-        'certificates' => $certArray,
-    );
+    if( evlHabilitada() ) {
     
-    $json = json_encode($mainArray);
-    echo "AQUI O CERT ARRAY -> {$json}\n";
-    
-    $response = \Httpful\Request::post($uri)
-        ->sendsJson()
-        ->body($json)
-        ->send();    
+        $school = $DB->get_record('course',array('id'=>'1'));        
+        
+        $uri = evlURLWebServices() . '/api/v1/certificados/adicionar/';
 
-    // Se o registro foi criado no servidor, registra em tabela de controle
-    if(!$response->hasErrors()) {
-        registraSincronizacaoCertificado($certificado);
-    } else {
-        mtrace("Erro sincronizando certificado " . $certificado->code . ": " . $response->code . " " );
+        $obj = new StdClass();
+        $certArray = array();
+
+        // Gravação de certificado para envio ao Web Service da EVL
+        $certItem = array(
+            'course' => $certificado->course,
+            'student' => $certificado->user,
+            'date' => $certificado->timecreated,
+            'grade' => $certificado->gradefmt,
+            'code' => $certificado->id,
+        );
+        array_push($certArray, $certItem);
+        $mainArray = array(
+            'key' => evlAPIKey(),
+            'school' => evlSiglaEscola(), 
+            'certificates' => $certArray,
+        );
+        
+        $json = json_encode($mainArray);
+        echo "AQUI O CERT ARRAY -> {$json}\n";
+        
+        $response = \Httpful\Request::post($uri)
+            ->sendsJson()
+            ->body($json)
+            ->send();    
+
+        // Se o registro foi criado no servidor, registra em tabela de controle
+        if(!$response->hasErrors()) {
+            registraSincronizacaoCertificado($certificado);
+        } else {
+            mtrace("Erro sincronizando certificado " . $certificado->code . ": " . $response->code . " " );
+        }
     }
 }
 
@@ -374,31 +381,33 @@ function registraSincronizacaoCertificado($certificado) {
 function atualizaDadosEscola($dadosEscola) {
     global $DB, $CFG, $USER;
 
-    $school = $DB->get_record('course',array('id'=>'1'));        
+    if( evlHabilitada() ) {
+        $school = $DB->get_record('course',array('id'=>'1'));        
     
-    $uri = evlURLWebServices() . '/api/v1/escolas/registrar/';
+        $uri = evlURLWebServices() . '/api/v1/escolas/registrar/';
 
-    $obj = new StdClass();
+        $obj = new StdClass();
 
-    // Gravação de certificado para envio ao Web Service da EVL
-    $schoolArray = array(
-        'name' => $dadosEscola->nome_escola,
-        'url' => $dadosEscola->url_escola,
-        'logo' => $dadosEscola->url_logo_escola,
-        'initials' => $dadosEscola->sigla_escola,
-        'key' => evlAPIKey()
-    );
-    
-    $json = json_encode($schoolArray);
-    
-    $response = \Httpful\Request::post($uri)
-        ->sendsJson()
-        ->body($json)
-        ->send();
-    
-    // Se o registro foi criado no servidor, registra em tabela de controle
-    if($response->hasErrors()) {
-        mtrace("Erro sincronizando dados da escola " . $dadosEscola->sigla_escola);
+        // Gravação de certificado para envio ao Web Service da EVL
+        $schoolArray = array(
+            'name' => $dadosEscola->nome_escola,
+            'url' => $dadosEscola->url_escola,
+            'logo' => $dadosEscola->url_logo_escola,
+            'initials' => $dadosEscola->sigla_escola,
+            'key' => evlAPIKey()
+        );
+        
+        $json = json_encode($schoolArray);
+        
+        $response = \Httpful\Request::post($uri)
+            ->sendsJson()
+            ->body($json)
+            ->send();
+        
+        // Se o registro foi criado no servidor, registra em tabela de controle
+        if($response->hasErrors()) {
+            mtrace("Erro sincronizando dados da escola " . $dadosEscola->sigla_escola);
+        }
     }
 }
 
