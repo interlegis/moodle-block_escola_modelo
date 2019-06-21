@@ -127,11 +127,27 @@ function atualizaCursoEVL($curso, $visivel = null) {
 
         $obj = new StdClass();
 
+        // Obtem a imagem do curso
+        $urlLogo = '';
+        //$course = $DB->get_record('course', array('id'=>$curso->id));
+        if ($curso instanceof stdClass) {
+            $course = new core_course_list_element($curso);
+        }
+        foreach ($course->get_course_overviewfiles() as $file) {
+            $isimage = $file->is_valid_image();
+            if($isimage) {
+                $urlLogo = file_encode_url("$CFG->wwwroot/pluginfile.php",
+                    '/'. $file->get_contextid(). '/'. $file->get_component(). '/'.
+                    $file->get_filearea(). $file->get_filepath(). $file->get_filename(), !$isimage);
+            }
+            break;            
+        }
+
         $camposCurso = array( 
             "name" => $curso->fullname,
             "url" => "",
             "description" => $curso->summary,
-            "logo" => "",
+            "logo" => "$urlLogo",
             "ead_id" => $curso->id,
             "visible" => $visivel,
             "conteudista" => "", 
