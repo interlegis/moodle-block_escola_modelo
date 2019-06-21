@@ -84,22 +84,20 @@ class escola_modelo extends \core\task\scheduled_task {
 		$sqlCourses = '
 			SELECT c.*, d.value as ind_publico_evl
 			FROM {course} c
-				LEFT JOIN {ilb_sync_course} sc
-					ON c.id = sc.course_id
 				JOIN {context} ctx
-					ON c.id = ?
-						AND ctx.contextlevel = 50
+					ON ctx.contextlevel = 50
 						AND ctx.instanceid = c.id
 				JOIN {customfield_field} f
 					ON f.shortname = ?
-				JOIN {customfield_data} d
+				LEFT JOIN {customfield_data} d
 					ON d.fieldid = f.id
-						AND d.contextid = ctx.id
+							AND d.contextid = ctx.id
+				LEFT JOIN {ilb_sync_course} sc
+					ON c.id = sc.course_id          	
 			WHERE (sc.course_id is null
-				OR c.timemodified > sc.time_sync)
-		';
+				OR c.timemodified > sc.time_sync)		';
 
-		$listaCursos = $DB->get_records_sql($sqlCourses,array());
+		$listaCursos = $DB->get_records_sql($sqlCourses,array(CURSO_CUSTOMFIELD_PUBLICO));
 
 		// Atualiza cada um dos cursos pendentes
 		foreach($listaCursos as $curso) {
