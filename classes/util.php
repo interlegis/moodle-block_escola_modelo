@@ -29,6 +29,14 @@ function cursoPublico($course) {
     return $publico;
 }
 
+function cursoCargaHoraria($course) {
+    global $DB;
+
+    // Um curso é público se estiver marcado como público em campo personalizado
+    $ch = (obtemCampoCustomizadoCurso($course->id, CURSO_CUSTOMFIELD_CARGAHORARIA));
+    return $ch;
+}
+
 function evlHabilitada() {
     $config = get_config('block_escola_modelo');
     return ($config->config_habilitar_evl == 1);
@@ -113,13 +121,7 @@ function atualizaCursoEVL($curso, $visivel = null) {
         // Detecta status, caso ele não tenha sido especificado
         $visivel = $visivel ?? cursoPublico($curso);
         
-        // Hack: enquanto não há campos personalizados no curso, a carga horária
-        // precisa ser obtida a partir do idnumber
-        $idnumber = $curso->idnumber;
-        $ch = 0;
-        if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
-            $ch = $x[1];
-        }
+        $ch = cursoCargaHoraria($curso);
 
         $school = $DB->get_record('course',array('id'=>'1'));        
         

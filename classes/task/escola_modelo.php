@@ -32,7 +32,7 @@ class escola_modelo extends \core\task\scheduled_task {
 			$syncStartTime = $DB->get_record_sql('SELECT extract(epoch from now())::int8');
 
 			$this->sincronizaDadosEscola($syncStartTime);
-			//$this->sincronizaCursos($syncStartTime);
+			$this->sincronizaCursos($syncStartTime);
 			//$this->sincronizaMatriculas($syncStartTime);
 			//$this->sincronizaCertificados($syncStartTime);
 		}
