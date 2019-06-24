@@ -81,15 +81,19 @@ function obtemCampoCustomizadoCurso($idCurso, $nomeCampo) {
         ";
     
     $valueArray = $DB->get_record_sql($sql, [$idCurso, $nomeCampo]);
-    $value = $valueArray->value;
-    $options = $valueArray->options;
 
-    if($options == null) {
-        return $value;
+    if($valueArray) {
+        $value = $valueArray->value;
+        $options = $valueArray->options;
+
+        if($options == null) {
+            return $value;
+        } else {
+            $optionsArray = preg_split("/\s*\n\s*/", trim($options));
+            return $optionsArray[$value-1];
+        }
     } else {
-        
-        $optionsArray = preg_split("/\s*\n\s*/", trim($options));
-        return $optionsArray[$value-1];
+        return '';
     }
 }
 
