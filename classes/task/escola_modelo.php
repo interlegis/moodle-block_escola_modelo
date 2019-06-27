@@ -33,8 +33,8 @@ class escola_modelo extends \core\task\scheduled_task {
 
 			$this->sincronizaDadosEscola($syncStartTime);
 			$this->sincronizaCursos($syncStartTime);
-			//$this->sincronizaMatriculas($syncStartTime);
-			//$this->sincronizaCertificados($syncStartTime);
+			$this->sincronizaMatriculas($syncStartTime);
+			$this->sincronizaCertificados($syncStartTime);
 		}
 	}
 
@@ -123,13 +123,13 @@ class escola_modelo extends \core\task\scheduled_task {
 		mtrace("Iniciando sincronização de certificados");
 
 		// Identifica eventuais cursos não sincronizados
-		$sqlCertificates = '
-			SELECT c.id as courseid, u.username, ci.timecreated, gg.finalgrade, ci.code, cert.id
+		$sqlCertificates = "
+			SELECT ci.code, c.id as course, u.username as user, ci.timecreated, gg.finalgrade as gradefmt, cert.id as id
 			FROM (
-				SELECT ci.timecreated, sc.time_sync, ci.code, ci.certificateid, ci.userid
-				FROM {certificate_issues} ci
-					LEFT JOIN {ilb_sync_certificate} sc
-						ON ci.id = sc.certificate_id
+				SELECT ci.timecreated, sc.time_sync, sc.certificate_id, ci.code, ci.certificateid, ci.userid
+				FROM mdl_certificate_issues ci
+					LEFT JOIN mdl_ilb_sync_certificate sc
+						ON ci.certificateid = sc.certificate_id
 				WHERE sc.time_sync is null
 					OR ci.timecreated > sc.time_sync
 			) ci
@@ -141,16 +141,17 @@ class escola_modelo extends \core\task\scheduled_task {
 					ON u.id = ci.userid
 				LEFT JOIN mdl_grade_items gi
 					ON gi.courseid = c.id
-						AND gi.itemtype =  \'course\'
+						AND gi.itemtype =  'course'
 				LEFT JOIN mdl_grade_grades gg
 					ON gg.itemid = gi.id
 						AND gg.userid = ci.userid
-		';
+		";
 
 		$certificados = $DB->get_records_sql($sqlCertificates,array());
-
+		
 		// Processa cada certificado, gerando chamada ao web service 
 		foreach ($certificados as $certificado) {
+			echo "CERTIFICADO -> " . $certificado->user . "\n";
 			atualizaCertificadoEVL($certificado); 
 		}
 		mtrace("Fim da sincronização de certificados");

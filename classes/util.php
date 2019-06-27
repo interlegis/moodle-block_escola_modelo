@@ -222,9 +222,6 @@ function atualizaCategoriaEVL($categoria) {
 function atualizaMatriculas($syncStartTime, $courseId = 0) {
     global $DB;
     
-    // FIXME comentado para não atrapalhar apresentação para diretor amanhã
-    // (ainda em desenvolvimento)
-/*
 	// Obtem todas as matrículas pendentes de sincronização
 	$sqlEnrolments = '
         SELECT e.courseid, json_agg( u.username )::varchar as userlist, 
@@ -244,72 +241,49 @@ function atualizaMatriculas($syncStartTime, $courseId = 0) {
                 ON ue.id = sue.user_enrolment_id            
 		WHERE (sue.user_enrolment_id is null
             OR ue.timemodified > sue.time_sync)
-            AND (? = 0 OR ue.courseid = ?)		
+            AND (? = 0 OR e.courseid = ?)		
         GROUP BY e.courseid, (coalesce(publicevl.intvalue,0) <> 0)
 	';
 
     $listaMatriculasCurso = $DB->get_records_sql($sqlEnrolments,
         array($courseId, $courseId));
 
-	// Atualiza cada um dos cursos pendentes
+    // Atualiza cada um dos cursos pendentes
 	foreach($listaMatriculasCurso as $matricula) {
-		atualizaMatriculaEVL($matricula->courseid, $matricula->userlist, $matricula->publicevl);
+        // Ver uma maneira melhor de se transformar a string que está vindo em vetor
+        $arrayusers = array_map('trim', explode(',', str_replace('"', "", str_replace(']', '', str_replace('[', '', $matricula->userlist)))));
+		atualizaMatriculaEVL($matricula->courseid, $arrayusers, $matricula->publicevl);
     }
-    */
 }
 
 function atualizaMatriculaEVL($courseid, $userlist, $publicEVL) {
-    global $DB;
+    global $DB, $CFG;
 
     if( evlHabilitada() ) {
-        
-        // Detecta status, caso ele não tenha sido especificado
-        $visivel = true; //$visivel ?? cursoPublico($curso);
-        
-        // Hack: enquanto não há campos personalizados no curso, a carga horária
-        // precisa ser obtida a partir do idnumber
-        $idnumber = $curso->idnumber;
-        $ch = 0;
-        if(preg_match("/\_CH([0-9]+)/", $idnumber, $x)) {
-            $ch = $x[1];
-        }
-
-        $school = $DB->get_record('course',array('id'=>'1'));        
-        
-        $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
-
-        $obj = new StdClass();
-
-        $camposCurso = array( 
-            "name" => $curso->fullname,
-            "url" => "",
-            "description" => $curso->summary,
-            "logo" => "",
-            "ead_id" => $curso->id,
-            "visible" => $visivel,
-            "conteudista" => "", //$school->shortname,
-            "certificador" => $school->shortname,
-            "carga_horaria" => $ch
-        );
-
         // Monta o JSON que será enviado ao Web Service
-        $obj->school = $school->shortname; // sigla da escola
-        $obj->course = $camposCurso;
-        $obj->key = "k4B5YcbKa619ohu3wxk2xXbmtoxFuQqrwcKEOTAnZi7iy4tl9z";
-
+        $obj = new StdClass();
+        $obj->course = $courseid;
+        $obj->key = evlAPIKey();
+        $obj->alunos = $userlist;
+        $obj->sigla = evlSiglaEscola();
         $json = json_encode($obj);
 
-        $response = \Httpful\Request::post($uri)
-            ->sendsJson()
-            ->body($json)
-            ->send();
-        
-        // Se o registro foi criado no servidor, registra em tabela de controle
-        if(!$response->hasErrors()) {
-            registraSincronizacaoMatriculaUsuario($matricula);
-        } else {
-            mtrace("Erro sincronizando ". $matricula->fullname . ": " . $response->code . " " );
-        }
+        if ($publicEVL){
+            $uri = $CFG->emURLWS . '/matricula/alunos/';
+            $response = \Httpful\Request::post($uri)
+                ->sendsJson()
+                ->body($json)
+                ->send();            
+        } 
+        // FIX ME -> Como será o comportamento ao transformar um curso em privado? 
+        // Excluir os cursos que estão na EVL? 
+        /*else {
+            $uri = $CFG->emURLWS . '/api/v1/matricula/apagar/';
+            $response = \Httpful\Request::post($uri)
+                ->sendsJson()
+                ->body($json)
+                ->send();
+        }*/
     }
 }
 
@@ -361,7 +335,6 @@ function atualizaCertificadoEVL($certificado) {
         );
         
         $json = json_encode($mainArray);
-        echo "AQUI O CERT ARRAY -> {$json}\n";
         
         $response = \Httpful\Request::post($uri)
             ->sendsJson()
