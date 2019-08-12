@@ -47,6 +47,20 @@ function evlSiglaEscola() {
     return $config->config_sigla_evl;
 }
 
+function evlMunicipio() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_municipio;
+}
+
+function evlUF() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_uf;
+}
+
+function evlMunicipioUF() {
+    return evlMunicipio() . '(' . evlUF() . ')';
+}
+
 function evlAPIKey() {
     $config = get_config('block_escola_modelo');
     return $config->config_apikey;
@@ -280,7 +294,7 @@ function atualizaMatriculaEVL($courseid, $userlist, $publicEVL) {
 
         $school = $DB->get_record('course',array('id'=>'1'));        
         
-        $uri = $CFG->emURLWS . '/api/v1/cursos/registrar/';
+        $uri = evlURLWebServices() . '/api/v1/cursos/registrar/';
 
         $obj = new StdClass();
 

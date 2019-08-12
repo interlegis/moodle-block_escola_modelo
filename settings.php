@@ -38,6 +38,24 @@ if ($ADMIN->fulltree) {
         get_string('config_sigla_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
     $settings->add($setting);
 
+    // Nome da Casa Legislativa
+    $setting = new admin_setting_configtext('block_escola_modelo/config_casa_legislativa',
+        get_string('config_casa_legislativa_titulo', 'block_escola_modelo'),
+        get_string('config_casa_legislativa_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+    $settings->add($setting);
+
+    // Nome do Município
+    $setting = new admin_setting_configtext('block_escola_modelo/config_municipio',
+        get_string('config_municipio_titulo', 'block_escola_modelo'),
+        get_string('config_municipio_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+    $settings->add($setting);
+
+    // Sigla da UF
+    $setting = new admin_setting_configtext('block_escola_modelo/config_uf',
+        get_string('config_uf_titulo', 'block_escola_modelo'),
+        get_string('config_uf_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+    $settings->add($setting);
+
     // API Key desta instalação
     $setting = new admin_setting_configtext('block_escola_modelo/config_apikey',
         get_string('config_apikey_titulo', 'block_escola_modelo'),
