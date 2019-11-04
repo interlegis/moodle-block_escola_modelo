@@ -29,25 +29,25 @@ defined('MOODLE_INTERNAL') || die();
 if ($ADMIN->fulltree) {
     $setting = new admin_setting_configcheckbox('block_escola_modelo/config_habilitar_evl',
         get_string('config_habilitar_evl_titulo', 'block_escola_modelo'),
-        get_string('config_habilitar_evl_descricao', 'block_escola_modelo'), 1);
+        get_string('config_habilitar_evl_descricao', 'block_escola_modelo'), 0);
     $settings->add($setting);
 
     // Sigla da Escola na EVL
     $setting = new admin_setting_configtext('block_escola_modelo/config_sigla_evl',
         get_string('config_sigla_evl_titulo', 'block_escola_modelo'),
-        get_string('config_sigla_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+        get_string('config_sigla_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 5);
     $settings->add($setting);
 
     // Nome da Casa Legislativa
     $setting = new admin_setting_configtext('block_escola_modelo/config_casa_legislativa',
         get_string('config_casa_legislativa_titulo', 'block_escola_modelo'),
-        get_string('config_casa_legislativa_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+        get_string('config_casa_legislativa_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 50);
     $settings->add($setting);
 
     // Nome do Município
     $setting = new admin_setting_configtext('block_escola_modelo/config_municipio',
         get_string('config_municipio_titulo', 'block_escola_modelo'),
-        get_string('config_municipio_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 3);
+        get_string('config_municipio_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 50);
     $settings->add($setting);
 
     // Sigla da UF
@@ -72,5 +72,11 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configtext('block_escola_modelo/config_url_ws_evl',
         get_string('config_url_ws_evl_titulo', 'block_escola_modelo'),
         get_string('config_url_ws_evl_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 100);
+    $settings->add($setting);
+
+    // URL da Central de Autenticação
+    $setting = new admin_setting_configtext('block_escola_modelo/config_url_central_autenticacao',
+        get_string('config_url_central_autenticacao_titulo', 'block_escola_modelo'),
+        get_string('config_url_central_autenticacao_descricao', 'block_escola_modelo'), '', PARAM_TEXT, 100);
     $settings->add($setting);
 }

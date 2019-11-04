@@ -14,6 +14,10 @@ $observers = array(
         'eventname'   => '\core\event\course_deleted',
         'callback'    => 'block_escola_modelo_observer::course_deleted'
     ),
+    array(
+        'eventname'   => '\core\event\course_viewed',
+        'callback'    => 'block_escola_modelo_observer::course_viewed'
+    ),
     // Eventos de categorias
     array(
         'eventname'   => 'core\event\course_category_updated',

@@ -49,6 +49,20 @@ class block_escola_modelo_observer {
         atualizaCursoEVL($curso, false);
     }
 
+    /**
+     * Trata evento de visualização do curso
+     */
+    public static function course_viewed(\core\event\base $event) {
+        global $DB, $CFG;
+        // Ignora curso 1 (página inicial do Moodle)
+        if ($event->objectid > 1) {
+            $curso = $DB->get_record('course',array('id'=>$event->objectid));
+        
+            // Assegura que usuário está inscito na EVL
+            require_evl_ready($curso);
+        }
+    }
+
     // EVENTOS RELACIONADOS A CERTIFICADOS    
     public static function certificate_created(\core\event\base $event) {
         atualizaCertificadoEVL($event->other);
@@ -102,4 +116,10 @@ class block_escola_modelo_observer {
 
     //     atualizaMatriculaEVL($ue, false);
     // }
+
+
+
+
+
+
 }

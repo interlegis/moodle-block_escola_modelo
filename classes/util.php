@@ -25,8 +25,11 @@ function cursoPublico($course) {
     global $DB;
 
     // Um curso é público se estiver marcado como público em campo personalizado
-    $publico = (obtemCampoCustomizadoCurso($course->id, CURSO_CUSTOMFIELD_PUBLICO) == '1');
-    return $publico;
+    if(obtemCampoCustomizadoCurso($course->id, CURSO_CUSTOMFIELD_PUBLICO) === '1') {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 function cursoCargaHoraria($course) {
@@ -74,6 +77,11 @@ function evlURLPortal() {
 function evlURLWebServices() {
     $config = get_config('block_escola_modelo');
     return $config->config_url_ws_evl;
+}
+
+function evlURLCentralAutenticacao() {
+    $config = get_config('block_escola_modelo');
+    return $config->config_url_central_autenticacao;
 }
 
 // TODO mover para outro local, usado também em certificado
@@ -138,7 +146,6 @@ function atualizaCursoEVL($curso, $visivel = null) {
     if( evlHabilitada() ) {
         // Detecta status, caso ele não tenha sido especificado
         $visivel = $visivel ?? cursoPublico($curso);
-        
         $ch = cursoCargaHoraria($curso);
 
         $school = $DB->get_record('course',array('id'=>'1'));        
@@ -169,12 +176,15 @@ function atualizaCursoEVL($curso, $visivel = null) {
             "description" => $curso->summary,
             "logo" => "$urlLogo",
             "ead_id" => $curso->id,
-            "visible" => $visivel,
+            "visible" => $visivel?true:false,
             "conteudista" => evlSiglaEscola(), 
             "certificador" => evlSiglaEscola(),
             "carga_horaria" => $ch,
             "category" => strtolower(obtemCampoCustomizadoCurso($curso->id, CURSO_CUSTOMFIELD_AREATEMATICA))
         );
+
+        //print_r($camposCurso);
+
 
         // Monta o JSON que será enviado ao Web Service
         $obj->school = evlSiglaEscola();
@@ -443,6 +453,50 @@ function atualizaDadosEscola($dadosEscola) {
         // Se o registro foi criado no servidor, registra em tabela de controle
         if($response->hasErrors()) {
             mtrace("Erro sincronizando dados da escola " . $dadosEscola->sigla_escola);
+        }
+    }
+}
+
+
+////////////
+
+// Redireciona usuários inscritos localmente, mas não remotamente,
+// para preencherem quiz na EVL e assim realizarem inscrição remota
+function require_evl_ready($id) {
+    if(evlHabilitada()) {
+        // verifica se usuário respondeu quiz no EVL
+        // chama ws, pega result
+        global $CFG, $USER;
+
+        // // Monta url para redirecionamento após matrícula
+        $urlRedirect = new moodle_url("/course/view.php?id=", array('id' => $id));
+
+        $obj = new StdClass();
+        $obj->school = evlSiglaEscola();
+        $obj->school_course = $id;
+        $obj->key = evlAPIKey();
+        $obj->user = $USER->username;
+        $obj->redirect = $urlRedirect->out(false); // false evita codificar '&' na url de redirecionamento
+
+        $json = json_encode($obj);
+
+        $uri = $CFG->emURLWS . '/cursos/registro/quiz';
+        $response = \Httpful\Request::get($uri)
+            ->sendsJson()
+            ->body($json)
+            ->send();            
+
+        if(!$response->body->result){
+            // // Monta url para matrícula
+            // echo "TESTE";
+            $urlEnrol = new moodle_url(evlURLWebServices() . '/cursos/registro?school=', 
+            array(
+                'school' => evlSiglaEscola(),
+                'school_course' => $id, 
+                'key' => evlAPIKey(), 
+                'redirect' => $urlRedirect->out(false) // false evita codificar '&' na url de redirecionamento
+            ));
+            redirect($urlEnrol, 'Você será redirecionado para a EVL', 0);
         }
     }
 }

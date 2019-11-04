@@ -17,6 +17,9 @@ $string['config_url_portal_evl_descricao'] = 'URL do Portal da EVL';
 $string['config_url_ws_evl_titulo'] = 'Web Services da EVL';
 $string['config_url_ws_evl_descricao'] = 'URL Raiz do Servidor de Web Services da EVL';
 
+$string['config_url_central_autenticacao_titulo'] = 'Central de Autenticação';
+$string['config_url_central_autenticacao_descricao'] = 'URL da Central de Autenticação';
+
 $string['config_municipio_titulo'] = 'Nome do Município';
 $string['config_municipio_descricao'] = 'Nome do Município (para constar nos certificados)';
 

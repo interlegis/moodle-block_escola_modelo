@@ -82,7 +82,7 @@ class escola_modelo extends \core\task\scheduled_task {
 
 		// Obtem todos os cursos pendentes de sincronização
 		$sqlCourses = '
-			SELECT c.*, d.value as ind_publico_evl
+			SELECT c.*, coalesce(d.value,\'0\') as ind_publico_evl
 			FROM {course} c
 				JOIN {context} ctx
 					ON ctx.contextlevel = 50
@@ -101,7 +101,7 @@ class escola_modelo extends \core\task\scheduled_task {
 
 		// Atualiza cada um dos cursos pendentes
 		foreach($listaCursos as $curso) {
-			atualizaCursoEVL($curso);
+			atualizaCursoEVL($curso, ($curso->ind_publico_evl == '1'));
 		}
 		mtrace("Fim da sincronização de cursos");
 	}
