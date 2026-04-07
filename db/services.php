@@ -33,7 +33,7 @@ $functions = array(
         'block_escola_modelo_get_usage_statistics' => array(
                 'classname'   => 'block_escola_modelo_external',
                 'methodname'  => 'get_usage_statistics',
-                'classpath'   => 'block/escola_modelo/externallib.php',
+                'classpath'   => 'blocks/escola_modelo/externallib.php',
                 'description' => 'Returns user statistics from this moodle installation',
                 'type'        => 'read',
         ),
